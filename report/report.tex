@@ -85,7 +85,7 @@ x(t)=\sin(2\pi\cdot12t)+0.6\sin(2\pi\cdot24t)+0.8w(t).
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp1_artificial_methods.png}
-\caption{人工复合信号的四种非参数谱估计比较。}
+\caption{人工复合信号的四种非参数谱估计比较。黑色短虚线用于显式标出与直接法近乎重合的自相关法曲线。}
 \end{figure}
 \input{generated/table_exp1_artificial.tex}
 
@@ -98,7 +98,7 @@ x(t)=\sin(2\pi\cdot12t)+0.6\sin(2\pi\cdot24t)+0.8w(t).
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp1_real_eeg_methods.png}
-\caption{真实Oz 59 s闭眼EEG的四种非参数谱估计比较。}
+\caption{真实Oz 59 s闭眼EEG的四种非参数谱估计比较。黑色短虚线用于显式标出与直接法近乎重合的自相关法曲线。}
 \end{figure}
 \input{generated/table_exp1_real.tex}
 
@@ -177,7 +177,7 @@ x(t)=\sin(2\pi\cdot12t)+0.6\sin(2\pi\cdot24t)+0.8w(t).
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp2_real_nfft_alpha.png}
-\caption{同一30 s真实EEG片段在不同NFFT下的$\alpha$峰比较。}
+\caption{同一30 s真实EEG片段在不同NFFT下的$\alpha$峰比较。三行分面共享坐标轴，用于避免近乎重合的曲线互相遮盖。}
 \end{figure}
 \input{generated/table_exp2_real_nfft.tex}
 
@@ -289,13 +289,13 @@ Welch法采用1 s分段、50\%重叠、Hamming窗。AR谱使用Yule-Walker法，
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp4_artificial_periodogram_30.png}
-\caption{30个独立实现的单次周期图及均值谱。}
+\caption{30个独立实现的单次周期图、10\%--90\%分位带及均值谱。}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp4_artificial_welch_30.png}
-\caption{30个独立实现的Welch谱及均值谱。}
+\caption{30个独立实现的Welch谱、10\%--90\%分位带及均值谱。}
 \end{figure}
 
 \begin{figure}[H]
@@ -321,13 +321,13 @@ Welch法采用1 s分段、50\%重叠、Hamming窗。AR谱使用Yule-Walker法，
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp4_real_periodogram_windows.png}
-\caption{真实Oz 9个6 s时间窗的单次周期图及均值谱。}
+\caption{真实Oz 9个6 s时间窗的单次周期图、10\%--90\%分位带及均值谱。}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp4_real_welch_windows.png}
-\caption{真实Oz 9个6 s时间窗的Welch谱及均值谱。}
+\caption{真实Oz 9个6 s时间窗的Welch谱、10\%--90\%分位带及均值谱。}
 \end{figure}
 
 \begin{figure}[H]

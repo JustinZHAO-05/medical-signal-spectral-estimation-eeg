@@ -59,6 +59,25 @@ def add_alpha_band(ax, label="alpha band") -> None:
     ax.text(10.5, y1, label, ha="center", va="top", fontsize=9, color="#32566b")
 
 
+def method_line_style_en(label: str) -> dict:
+    if label.startswith("Direct FFT"):
+        return {"label": label, "color": "#1f77b4", "lw": 2.4, "alpha": 0.78, "zorder": 2}
+    if label.startswith("Autocorrelation"):
+        return {
+            "label": "Autocorr (overlaps FFT)",
+            "color": "#111827",
+            "lw": 1.7,
+            "ls": (0, (3, 2)),
+            "alpha": 0.95,
+            "zorder": 5,
+        }
+    if label.startswith("Periodogram"):
+        return {"label": label, "color": "#f28e2b", "lw": 1.35, "alpha": 0.88, "zorder": 3}
+    if label.startswith("Welch"):
+        return {"label": label, "color": "#d62728", "lw": 1.45, "alpha": 0.9, "zorder": 4}
+    return {"label": label}
+
+
 def run_all_en() -> dict[str, Path]:
     setup()
     outputs: dict[str, Path] = {}
@@ -94,7 +113,7 @@ def exp1_figures() -> dict[str, Path]:
     ]
     fig, ax = plt.subplots(figsize=(9.4, 5.2))
     for psd in psds:
-        ax.plot(psd.freqs, psd.db, label=psd.label)
+        ax.plot(psd.freqs, psd.db, **method_line_style_en(psd.label))
     ax.axvline(12, color="#d62828", ls="--", lw=1.2, label="12 Hz")
     ax.axvline(24, color="#f77f00", ls="--", lw=1.2, label="24 Hz")
     ax.set_title("Experiment 1: four nonparametric PSD estimates for the artificial signal")
@@ -122,7 +141,7 @@ def exp1_figures() -> dict[str, Path]:
     ]
     fig, ax = plt.subplots(figsize=(9.4, 5.2))
     for psd in psds:
-        ax.plot(psd.freqs, psd.db, label=psd.label)
+        ax.plot(psd.freqs, psd.db, **method_line_style_en(psd.label))
     add_alpha_band(ax)
     ax.set_title("Experiment 1: classical PSD estimates for Oz closed-eye EEG")
     finish_psd(ax, xlim=(0, 40))
@@ -204,14 +223,32 @@ def exp2_figures() -> dict[str, Path]:
     ax.legend(fontsize=9)
     outputs["exp2_real_window"] = save(fig, "exp2_real_windows_alpha_en.png")
 
-    fig, ax = plt.subplots(figsize=(9.2, 5.0))
+    nfft_psds = []
     for nfft in [7500, 15000, 30000]:
         psd = periodogram_psd(x30, eeg.fs, window="hamming", nfft=nfft, label=f"nfft={nfft}, df={eeg.fs / nfft:.4f} Hz")
-        ax.plot(psd.freqs, psd.db, label=psd.label)
-    add_alpha_band(ax)
-    ax.set_title("Experiment 2: same 30 s EEG segment with different NFFT values")
-    finish_psd(ax, xlim=(6, 16))
-    ax.legend(fontsize=9)
+        nfft_psds.append((nfft, psd))
+    fig, axes = plt.subplots(3, 1, figsize=(9.2, 7.0), sharex=True, sharey=True)
+    colors = {7500: "#1f77b4", 15000: "#f28e2b", 30000: "#2ca02c"}
+    linestyles = {7500: "-", 15000: "--", 30000: "-."}
+    for ax, (nfft, psd) in zip(axes, nfft_psds):
+        ax.plot(psd.freqs, psd.db, color=colors[nfft], ls=linestyles[nfft], lw=1.65)
+        ax.axvspan(8, 13, color="#8ecae6", alpha=0.14, lw=0)
+        ax.text(
+            0.015,
+            0.82,
+            f"nfft={nfft}, df={eeg.fs / nfft:.4f} Hz",
+            transform=ax.transAxes,
+            ha="left",
+            va="center",
+            fontsize=9,
+            bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "#bcccdc", "alpha": 0.92},
+        )
+        ax.grid(True, alpha=0.24)
+    axes[0].set_title("Experiment 2: same 30 s EEG segment with different NFFT values")
+    axes[1].set_ylabel("Power spectral density (dB/Hz)")
+    axes[-1].set_xlabel("Frequency (Hz)")
+    axes[-1].set_xlim(6, 16)
+    axes[0].text(10.5, axes[0].get_ylim()[1], "alpha band", ha="center", va="top", fontsize=9, color="#32566b")
     outputs["exp2_real_nfft"] = save(fig, "exp2_real_nfft_alpha_en.png")
     return outputs
 
@@ -353,8 +390,10 @@ def plot_many_with_mean(psds, title: str, filename: str, alpha_band: bool = Fals
     pxx_stack = np.vstack([p.pxx for p in psds])
     db_stack = 10.0 * np.log10(np.maximum(pxx_stack, np.finfo(float).tiny))
     fig, ax = plt.subplots(figsize=(9.2, 5.0))
+    q10, q90 = np.percentile(db_stack, [10, 90], axis=0)
+    ax.fill_between(freqs, q10, q90, color="#7aa6c2", alpha=0.26, lw=0, label="10%-90% band")
     for row in db_stack:
-        ax.plot(freqs, row, color="#7aa6c2", alpha=0.28, lw=1.0)
+        ax.plot(freqs, row, color="#7aa6c2", alpha=0.08, lw=0.7)
     mean_db = 10.0 * np.log10(np.maximum(np.mean(pxx_stack, axis=0), np.finfo(float).tiny))
     ax.plot(freqs, mean_db, color="#d62828", lw=2.4, label="mean spectrum")
     if alpha_band:

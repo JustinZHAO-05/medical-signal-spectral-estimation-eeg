@@ -227,8 +227,10 @@ def _plot_many_with_mean(
 ) -> Path:
     fig, ax = plt.subplots(figsize=(9.2, 5.0))
     db_stack = 10.0 * np.log10(np.maximum(pxx_stack, np.finfo(float).tiny))
+    q10, q90 = np.percentile(db_stack, [10, 90], axis=0)
+    ax.fill_between(freqs, q10, q90, color="#7aa6c2", alpha=0.26, lw=0, label="10%-90%分位带")
     for row in db_stack:
-        ax.plot(freqs, row, color="#7aa6c2", alpha=0.28, lw=1.0)
+        ax.plot(freqs, row, color="#7aa6c2", alpha=0.08, lw=0.7)
     mean_db = 10.0 * np.log10(np.maximum(np.mean(pxx_stack, axis=0), np.finfo(float).tiny))
     ax.plot(freqs, mean_db, color="#d62828", lw=2.4, label="均值谱")
     if alpha_band:

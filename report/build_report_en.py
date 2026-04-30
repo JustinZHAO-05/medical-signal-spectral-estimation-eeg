@@ -301,7 +301,11 @@ def format_value(value) -> str:
     if pd.isna(value):
         return "not resolved"
     if isinstance(value, str):
-        return VALUE_TRANSLATIONS.get(value, value)
+        translated = VALUE_TRANSLATIONS.get(value, value)
+        try:
+            value = float(translated.strip())
+        except Exception:
+            return translated
     try:
         v = float(value)
     except Exception:

@@ -56,7 +56,7 @@ def _artificial_methods() -> dict[str, Path]:
 
     fig, ax = plt.subplots(figsize=(9.4, 5.2))
     for psd in psds:
-        ax.plot(psd.freqs, psd.db, label=psd.label)
+        ax.plot(psd.freqs, psd.db, **_method_line_style(psd.label))
     ax.axvline(12, color="#d62828", ls="--", lw=1.2, label="12 Hz")
     ax.axvline(24, color="#f77f00", ls="--", lw=1.2, label="24 Hz")
     ax.set_title("实验一(1)：人工复合信号的四种非参数谱估计")
@@ -114,7 +114,7 @@ def _real_eeg_methods() -> dict[str, Path]:
 
     fig, ax = plt.subplots(figsize=(9.4, 5.2))
     for psd in psds:
-        ax.plot(psd.freqs, psd.db, label=psd.label)
+        ax.plot(psd.freqs, psd.db, **_method_line_style(psd.label))
     add_band(ax, 8, 13, "α频段")
     ax.set_title("实验一(2)：Oz导联59 s闭眼EEG的经典谱估计比较")
     finish_psd_axes(ax, xlim=(0, 40))
@@ -160,6 +160,25 @@ def _psds_to_npz(psds):
         data[f"pxx_{i}"] = psd.pxx
         data[f"label_{i}"] = psd.label
     return data
+
+
+def _method_line_style(label: str) -> dict:
+    if "直接法" in label:
+        return {"label": label, "color": "#1f77b4", "lw": 2.4, "alpha": 0.78, "zorder": 2}
+    if "自相关" in label:
+        return {
+            "label": "自相关法(与直接法重合)",
+            "color": "#111827",
+            "lw": 1.7,
+            "ls": (0, (3, 2)),
+            "alpha": 0.95,
+            "zorder": 5,
+        }
+    if "Hamming" in label:
+        return {"label": label, "color": "#f28e2b", "lw": 1.35, "alpha": 0.88, "zorder": 3}
+    if "Welch" in label:
+        return {"label": label, "color": "#d62728", "lw": 1.45, "alpha": 0.9, "zorder": 4}
+    return {"label": label}
 
 
 if __name__ == "__main__":

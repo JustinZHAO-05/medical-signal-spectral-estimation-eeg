@@ -211,17 +211,41 @@ def _real_eeg_parameter_effects() -> dict[str, Path]:
 
     # 3) NFFT on the same 30 s segment.
     rows = []
-    fig, ax = plt.subplots(figsize=(9.2, 5.0))
+    nfft_psds = []
     for nfft in [7500, 15000, 30000]:
         psd = periodogram_psd(x30, fs, window="hamming", nfft=nfft, label=f"nfft={nfft}")
-        ax.plot(psd.freqs, psd.db, label=f"nfft={nfft}, Δf={fs / nfft:.4f} Hz")
+        nfft_psds.append((nfft, psd))
         row = {"nfft": nfft, "frequency_grid_interval_hz": fs / nfft}
         row.update(alpha_metrics(psd.freqs, psd.db))
         rows.append(row)
-    add_band(ax, 8, 13, "α频段")
-    ax.set_title("实验二(4-3)：同一30 s EEG补零后频率轴变密但分辨率不变")
-    finish_psd_axes(ax, xlim=(6, 16))
-    ax.legend(fontsize=9)
+    fig, axes = plt.subplots(3, 1, figsize=(9.2, 7.0), sharex=True, sharey=True)
+    colors = {7500: "#1f77b4", 15000: "#f28e2b", 30000: "#2ca02c"}
+    linestyles = {7500: "-", 15000: "--", 30000: "-."}
+    for ax, (nfft, psd) in zip(axes, nfft_psds):
+        ax.plot(
+            psd.freqs,
+            psd.db,
+            color=colors[nfft],
+            ls=linestyles[nfft],
+            lw=1.65,
+        )
+        ax.axvspan(8, 13, color="#8ecae6", alpha=0.14, lw=0)
+        ax.text(
+            0.015,
+            0.82,
+            f"nfft={nfft}, Δf={fs / nfft:.4f} Hz",
+            transform=ax.transAxes,
+            ha="left",
+            va="center",
+            fontsize=9,
+            bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "#bcccdc", "alpha": 0.92},
+        )
+        ax.grid(True, alpha=0.24)
+    axes[0].set_title("实验二(4-3)：同一30 s EEG补零后频率轴变密但分辨率不变")
+    axes[1].set_ylabel("功率谱密度 (dB/Hz)")
+    axes[-1].set_xlabel("频率 (Hz)")
+    axes[-1].set_xlim(6, 16)
+    axes[0].text(10.5, axes[0].get_ylim()[1], "α频段", ha="center", va="top", fontsize=9, color="#32566b")
     outputs["exp2_real_nfft_figure"] = save_figure(fig, "exp2_real_nfft_alpha.png")
     table_path = TABLE_DIR / "exp2_real_nfft_alpha_metrics.csv"
     pd.DataFrame(rows).to_csv(table_path, index=False, encoding="utf-8-sig")

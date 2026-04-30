@@ -285,7 +285,11 @@ def format_value(value) -> str:
     if pd.isna(value):
         return "未分辨"
     if isinstance(value, str):
-        return value
+        text = value.strip()
+        try:
+            value = float(text)
+        except Exception:
+            return value
     try:
         v = float(value)
     except Exception:

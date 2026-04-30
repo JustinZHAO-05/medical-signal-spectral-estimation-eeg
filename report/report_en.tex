@@ -89,7 +89,7 @@ where $w(t)$ is zero-mean unit-variance Gaussian noise. Direct FFT, Hamming peri
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp1_artificial_methods_en.png}
-\caption{Four nonparametric PSD estimates for the artificial signal.}
+\caption{Four nonparametric PSD estimates for the artificial signal. The short black dashed line explicitly marks the autocorrelation curve that nearly overlaps the direct FFT curve.}
 \end{figure}
 
 \input{generated_en/table_exp1_artificial.tex}
@@ -103,7 +103,7 @@ where $w(t)$ is zero-mean unit-variance Gaussian noise. Direct FFT, Hamming peri
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp1_real_eeg_methods_en.png}
-\caption{Four classical PSD estimates for the real Oz EEG segment.}
+\caption{Four classical PSD estimates for the real Oz EEG segment. The short black dashed line explicitly marks the autocorrelation curve that nearly overlaps the direct FFT curve.}
 \end{figure}
 
 \input{generated_en/table_exp1_real.tex}
@@ -168,7 +168,7 @@ The same ideas are tested on the real Oz EEG segment. The 10, 30, and 59 s compa
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp2_real_nfft_alpha_en.png}
-\caption{Same 30 s EEG segment with different NFFT values.}
+\caption{Same 30 s EEG segment with different NFFT values. The three facets share axes to avoid hiding nearly identical curves.}
 \end{figure}
 
 \input{generated_en/table_exp2_real_nfft.tex}
@@ -255,13 +255,13 @@ Thirty independent 8 s signals are generated as $\sin(2\pi10t)+w_k(t)$. Each rea
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp4_artificial_periodogram_30_en.png}
-\caption{Thirty single periodograms from the same random process.}
+\caption{Thirty single periodograms from the same random process, shown with a 10\%--90\% band and mean spectrum.}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp4_artificial_welch_30_en.png}
-\caption{Thirty Welch spectra from the same random process.}
+\caption{Thirty Welch spectra from the same random process, shown with a 10\%--90\% band and mean spectrum.}
 \end{figure}
 
 \begin{figure}[H]
@@ -287,13 +287,13 @@ The real Oz segment 58.84--112.84 s is split into nine non-overlapping 6 s windo
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp4_real_periodogram_windows_en.png}
-\caption{Real EEG periodograms across nine 6 s windows.}
+\caption{Real EEG periodograms across nine 6 s windows, shown with a 10\%--90\% band and mean spectrum.}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{exp4_real_welch_windows_en.png}
-\caption{Real EEG Welch spectra across nine 6 s windows.}
+\caption{Real EEG Welch spectra across nine 6 s windows, shown with a 10\%--90\% band and mean spectrum.}
 \end{figure}
 
 \begin{figure}[H]
