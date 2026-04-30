@@ -59,23 +59,30 @@ def add_alpha_band(ax, label="alpha band") -> None:
     ax.text(10.5, y1, label, ha="center", va="top", fontsize=9, color="#32566b")
 
 
-def method_line_style_en(label: str) -> dict:
+def method_line_style_en(label: str) -> dict | None:
     if label.startswith("Direct FFT"):
-        return {"label": label, "color": "#1f77b4", "lw": 2.4, "alpha": 0.78, "zorder": 2}
+        return {"label": "Direct FFT / autocorrelation (overlap)", "color": "#1f77b4", "lw": 2.4, "alpha": 0.82, "zorder": 2}
     if label.startswith("Autocorrelation"):
-        return {
-            "label": "Autocorr (overlaps FFT)",
-            "color": "#111827",
-            "lw": 1.7,
-            "ls": (0, (3, 2)),
-            "alpha": 0.95,
-            "zorder": 5,
-        }
+        return None
     if label.startswith("Periodogram"):
         return {"label": label, "color": "#f28e2b", "lw": 1.35, "alpha": 0.88, "zorder": 3}
     if label.startswith("Welch"):
         return {"label": label, "color": "#d62728", "lw": 1.45, "alpha": 0.9, "zorder": 4}
     return {"label": label}
+
+
+def add_overlap_note_en(ax) -> None:
+    ax.text(
+        0.02,
+        0.08,
+        "Direct FFT and autocorrelation overlap; blue line represents both.",
+        transform=ax.transAxes,
+        ha="left",
+        va="bottom",
+        fontsize=9,
+        color="#1f4e79",
+        bbox={"boxstyle": "round,pad=0.28", "fc": "white", "ec": "#b6c8d8", "alpha": 0.92},
+    )
 
 
 def run_all_en() -> dict[str, Path]:
@@ -113,9 +120,12 @@ def exp1_figures() -> dict[str, Path]:
     ]
     fig, ax = plt.subplots(figsize=(9.4, 5.2))
     for psd in psds:
-        ax.plot(psd.freqs, psd.db, **method_line_style_en(psd.label))
+        style = method_line_style_en(psd.label)
+        if style is not None:
+            ax.plot(psd.freqs, psd.db, **style)
     ax.axvline(12, color="#d62828", ls="--", lw=1.2, label="12 Hz")
     ax.axvline(24, color="#f77f00", ls="--", lw=1.2, label="24 Hz")
+    add_overlap_note_en(ax)
     ax.set_title("Experiment 1: four nonparametric PSD estimates for the artificial signal")
     finish_psd(ax, xlim=(0, 45))
     ax.legend(ncol=2, fontsize=9)
@@ -141,8 +151,11 @@ def exp1_figures() -> dict[str, Path]:
     ]
     fig, ax = plt.subplots(figsize=(9.4, 5.2))
     for psd in psds:
-        ax.plot(psd.freqs, psd.db, **method_line_style_en(psd.label))
+        style = method_line_style_en(psd.label)
+        if style is not None:
+            ax.plot(psd.freqs, psd.db, **style)
     add_alpha_band(ax)
+    add_overlap_note_en(ax)
     ax.set_title("Experiment 1: classical PSD estimates for Oz closed-eye EEG")
     finish_psd(ax, xlim=(0, 40))
     ax.legend(ncol=2, fontsize=9)

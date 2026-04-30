@@ -56,9 +56,12 @@ def _artificial_methods() -> dict[str, Path]:
 
     fig, ax = plt.subplots(figsize=(9.4, 5.2))
     for psd in psds:
-        ax.plot(psd.freqs, psd.db, **_method_line_style(psd.label))
+        style = _method_line_style(psd.label)
+        if style is not None:
+            ax.plot(psd.freqs, psd.db, **style)
     ax.axvline(12, color="#d62828", ls="--", lw=1.2, label="12 Hz")
     ax.axvline(24, color="#f77f00", ls="--", lw=1.2, label="24 Hz")
+    _add_overlap_note(ax)
     ax.set_title("实验一(1)：人工复合信号的四种非参数谱估计")
     finish_psd_axes(ax, xlim=(0, 45))
     ax.legend(ncol=2, fontsize=9)
@@ -114,8 +117,11 @@ def _real_eeg_methods() -> dict[str, Path]:
 
     fig, ax = plt.subplots(figsize=(9.4, 5.2))
     for psd in psds:
-        ax.plot(psd.freqs, psd.db, **_method_line_style(psd.label))
+        style = _method_line_style(psd.label)
+        if style is not None:
+            ax.plot(psd.freqs, psd.db, **style)
     add_band(ax, 8, 13, "α频段")
+    _add_overlap_note(ax)
     ax.set_title("实验一(2)：Oz导联59 s闭眼EEG的经典谱估计比较")
     finish_psd_axes(ax, xlim=(0, 40))
     ax.legend(ncol=2, fontsize=9)
@@ -162,23 +168,30 @@ def _psds_to_npz(psds):
     return data
 
 
-def _method_line_style(label: str) -> dict:
+def _method_line_style(label: str) -> dict | None:
     if "直接法" in label:
-        return {"label": label, "color": "#1f77b4", "lw": 2.4, "alpha": 0.78, "zorder": 2}
+        return {"label": "直接法(矩形窗FFT) / 自相关法(重合)", "color": "#1f77b4", "lw": 2.4, "alpha": 0.82, "zorder": 2}
     if "自相关" in label:
-        return {
-            "label": "自相关法(与直接法重合)",
-            "color": "#111827",
-            "lw": 1.7,
-            "ls": (0, (3, 2)),
-            "alpha": 0.95,
-            "zorder": 5,
-        }
+        return None
     if "Hamming" in label:
         return {"label": label, "color": "#f28e2b", "lw": 1.35, "alpha": 0.88, "zorder": 3}
     if "Welch" in label:
         return {"label": label, "color": "#d62728", "lw": 1.45, "alpha": 0.9, "zorder": 4}
     return {"label": label}
+
+
+def _add_overlap_note(ax) -> None:
+    ax.text(
+        0.02,
+        0.08,
+        "直接法与自相关法重合，蓝线同时表示二者",
+        transform=ax.transAxes,
+        ha="left",
+        va="bottom",
+        fontsize=9,
+        color="#1f4e79",
+        bbox={"boxstyle": "round,pad=0.28", "fc": "white", "ec": "#b6c8d8", "alpha": 0.92},
+    )
 
 
 if __name__ == "__main__":
