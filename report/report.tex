@@ -44,7 +44,7 @@
 \subsection{数据与片段}
 人工信号均按任务书公式生成，随机噪声使用固定种子20260430。真实EEG来自配套的LEMON数据文件\texttt{sub-032481/sub-032481\_EC.set}及\texttt{.fdt}文件，读取结果为60通道、119524个采样点、采样率250 Hz。分析导联为Oz。实验一和实验二的主要真实EEG片段为58.84--117.84 s，实验三真实EEG片段为126.61--134.61 s，实验四真实EEG片段为58.84--112.84 s。
 
-EEG数据统一使用伏特（V）作为内部单位。首选读取方式为MNE，MNE会返回V；若因\texttt{.set}文件中的历史文件名导致MNE读取失败，程序会直接用\texttt{scipy.io.loadmat}读取元数据、用\texttt{np.fromfile}读取\texttt{.fdt}，并将EEGLAB中的微伏量级数据乘以$10^{-6}$转换为V。这样两条读取路径得到的Oz片段标准差一致，后续dB/Hz绝对功率谱不会因读取路径改变而整体平移约120 dB。
+EEG数据统一使用伏特（V）作为内部单位。首选读取方式为MNE，MNE会返回V；若因\texttt{.set}文件中的历史文件名导致MNE读取失败，程序会直接用\texttt{scipy.io.loadmat}读取元数据、用\texttt{np.fromfile}读取\texttt{.fdt}，并将EEGLAB中的微伏量级数据乘以0.000001转换为V。这样两条读取路径得到的Oz片段标准差一致，后续dB/Hz绝对功率谱不会因读取路径改变而整体平移约120 dB。
 
 \subsection{谱估计统一口径}
 所有谱曲线先去均值，再计算单边功率谱密度。周期图类方法采用窗功率归一化：
@@ -224,7 +224,7 @@ Welch法采用1 s分段、50\%重叠、Hamming窗。AR谱使用Yule-Walker法，
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.86\textwidth]{exp3_artificial_fpe.png}
-\caption{人工信号AR阶数-FPE曲线。}
+\caption{人工信号AR阶数-相对FPE曲线，纵轴以最小FPE归一化。}
 \end{figure}
 \input{generated/table_exp3_artificial_fpe.tex}
 
@@ -255,7 +255,7 @@ Welch法采用1 s分段、50\%重叠、Hamming窗。AR谱使用Yule-Walker法，
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.86\textwidth]{exp3_real_fpe.png}
-\caption{真实EEG的AR阶数-FPE曲线。}
+\caption{真实EEG的AR阶数-相对FPE曲线，纵轴以最小FPE归一化。}
 \end{figure}
 \input{generated/table_exp3_real_fpe.tex}
 

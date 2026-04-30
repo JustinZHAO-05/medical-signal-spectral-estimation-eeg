@@ -292,10 +292,12 @@ def format_value(value) -> str:
         return str(value)
     if not math.isfinite(v):
         return "未分辨"
-    if v != 0 and (abs(v) >= 10000 or abs(v) < 0.001):
-        return f"{v:.3e}"
+    if v != 0 and abs(v) < 0.001:
+        return "<0.001" if v > 0 else ">-0.001"
     if abs(v - round(v)) < 1e-10 and abs(v) < 100000:
         return str(int(round(v)))
+    if abs(v) >= 10000:
+        return f"{v:.3f}".rstrip("0").rstrip(".")
     return f"{v:.3f}"
 
 

@@ -81,14 +81,14 @@ def _artificial_welch_ar() -> dict[str, Path]:
     fpe_rows = fpe_values(x, range(2, 31))
     fpe_df = pd.DataFrame(fpe_rows)
     p_star = int(fpe_df.loc[fpe_df["fpe"].idxmin(), "order"])
-    fpe_df.to_csv(TABLE_DIR / "exp3_artificial_fpe_values.csv", index=False, encoding="utf-8-sig")
+    fpe_df.to_csv(TABLE_DIR / "exp3_artificial_fpe_values.csv", index=False, encoding="utf-8-sig", float_format="%.15f")
 
     fig, ax = plt.subplots(figsize=(8.0, 4.6))
-    ax.plot(fpe_df["order"], fpe_df["fpe"], marker="o", ms=3.8, color="#264653")
+    ax.plot(fpe_df["order"], fpe_df["fpe"] / fpe_df["fpe"].min(), marker="o", ms=3.8, color="#264653")
     ax.axvline(p_star, color="#d62828", ls="--", lw=1.2, label=f"FPE最小 p*={p_star}")
-    ax.set_title("实验三(2)：人工信号AR阶数-FPE曲线")
+    ax.set_title("实验三(2)：人工信号AR阶数-相对FPE曲线")
     ax.set_xlabel("AR阶数 p")
-    ax.set_ylabel("FPE")
+    ax.set_ylabel("相对FPE (最小值=1)")
     ax.legend()
     fpe_fig_path = save_figure(fig, "exp3_artificial_fpe.png")
 
@@ -106,7 +106,7 @@ def _artificial_welch_ar() -> dict[str, Path]:
 
     summary_path = TABLE_DIR / "exp3_artificial_fpe_summary.csv"
     pd.DataFrame([{"p_star": p_star, "min_fpe": float(fpe_df["fpe"].min()), "algorithm": "Yule-Walker"}]).to_csv(
-        summary_path, index=False, encoding="utf-8-sig"
+        summary_path, index=False, encoding="utf-8-sig", float_format="%.15f"
     )
     return {
         "exp3_artificial_figure": fig_path,
@@ -128,7 +128,7 @@ def _real_eeg_welch_ar() -> dict[str, Path]:
     fpe_df = pd.DataFrame(fpe_values(x, range(2, 81)))
     p_star = int(fpe_df.loc[fpe_df["fpe"].idxmin(), "order"])
     fpe_path = TABLE_DIR / "exp3_real_fpe_values.csv"
-    fpe_df.to_csv(fpe_path, index=False, encoding="utf-8-sig")
+    fpe_df.to_csv(fpe_path, index=False, encoding="utf-8-sig", float_format="%.15f")
 
     welch = welch_psd(x, fs, segment_s=2.0, overlap=0.5, window="hamming", nfft=nfft, label="Welch(2s/50%)")
     compare_orders = sorted(set([*orders, p_star]))
@@ -177,17 +177,17 @@ def _real_eeg_welch_ar() -> dict[str, Path]:
     zoom_fig_path = save_figure(fig, "exp3_real_welch_ar_alpha_zoom.png")
 
     fig, ax = plt.subplots(figsize=(8.0, 4.6))
-    ax.plot(fpe_df["order"], fpe_df["fpe"], marker="o", ms=3.2, color="#264653")
+    ax.plot(fpe_df["order"], fpe_df["fpe"] / fpe_df["fpe"].min(), marker="o", ms=3.2, color="#264653")
     ax.axvline(p_star, color="#d62828", ls="--", lw=1.2, label=f"FPE最小 p*={p_star}")
-    ax.set_title("实验三(3)：真实EEG AR阶数-FPE曲线")
+    ax.set_title("实验三(3)：真实EEG AR阶数-相对FPE曲线")
     ax.set_xlabel("AR阶数 p")
-    ax.set_ylabel("FPE")
+    ax.set_ylabel("相对FPE (最小值=1)")
     ax.legend()
     fpe_fig_path = save_figure(fig, "exp3_real_fpe.png")
 
     summary_path = TABLE_DIR / "exp3_real_fpe_summary.csv"
     pd.DataFrame([{"p_star": p_star, "min_fpe": float(fpe_df["fpe"].min()), "algorithm": "Yule-Walker"}]).to_csv(
-        summary_path, index=False, encoding="utf-8-sig"
+        summary_path, index=False, encoding="utf-8-sig", float_format="%.15f"
     )
     return {
         "exp3_real_figure": spec_fig_path,

@@ -28,6 +28,9 @@ def setup() -> None:
             "grid.alpha": 0.24,
             "axes.spines.top": False,
             "axes.spines.right": False,
+            "axes.formatter.useoffset": False,
+            "axes.formatter.use_mathtext": False,
+            "axes.formatter.limits": (-20, 20),
             "legend.frameon": True,
             "legend.framealpha": 0.92,
             "lines.linewidth": 1.8,
@@ -238,11 +241,11 @@ def exp3_figures() -> dict[str, Path]:
     fpe_df = pd.DataFrame(fpe_values(x, range(2, 31)))
     p_star = int(fpe_df.loc[fpe_df["fpe"].idxmin(), "order"])
     fig, ax = plt.subplots(figsize=(8.0, 4.6))
-    ax.plot(fpe_df["order"], fpe_df["fpe"], marker="o", ms=3.8, color="#264653")
+    ax.plot(fpe_df["order"], fpe_df["fpe"] / fpe_df["fpe"].min(), marker="o", ms=3.8, color="#264653")
     ax.axvline(p_star, color="#d62828", ls="--", lw=1.2, label=f"minimum FPE, p*={p_star}")
-    ax.set_title("Experiment 3: artificial signal AR order-FPE curve")
+    ax.set_title("Experiment 3: artificial signal AR order-relative FPE curve")
     ax.set_xlabel("AR order p")
-    ax.set_ylabel("FPE")
+    ax.set_ylabel("Relative FPE (minimum=1)")
     ax.legend()
     outputs["exp3_artificial_fpe"] = save(fig, "exp3_artificial_fpe_en.png")
 
@@ -287,11 +290,11 @@ def exp3_figures() -> dict[str, Path]:
     outputs["exp3_real_zoom"] = save(fig, "exp3_real_welch_ar_alpha_zoom_en.png")
 
     fig, ax = plt.subplots(figsize=(8.0, 4.6))
-    ax.plot(fpe_df["order"], fpe_df["fpe"], marker="o", ms=3.2, color="#264653")
+    ax.plot(fpe_df["order"], fpe_df["fpe"] / fpe_df["fpe"].min(), marker="o", ms=3.2, color="#264653")
     ax.axvline(p_star, color="#d62828", ls="--", lw=1.2, label=f"minimum FPE, p*={p_star}")
-    ax.set_title("Experiment 3: real EEG AR order-FPE curve")
+    ax.set_title("Experiment 3: real EEG AR order-relative FPE curve")
     ax.set_xlabel("AR order p")
-    ax.set_ylabel("FPE")
+    ax.set_ylabel("Relative FPE (minimum=1)")
     ax.legend()
     outputs["exp3_real_fpe"] = save(fig, "exp3_real_fpe_en.png")
     return outputs

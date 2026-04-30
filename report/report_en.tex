@@ -43,7 +43,7 @@ This report completes four spectral-estimation experiments on synthetic signals 
 \subsection{Data and Segments}
 The synthetic signals use a sampling rate of 250 Hz and fixed random seed 20260430. The real EEG data are the provided LEMON EC EEGLAB \texttt{.set/.fdt} files, containing 60 channels sampled at 250 Hz. The Oz channel is used throughout. The main real EEG segment for Experiments 1 and 2 is 58.84--117.84 s, the segment for Experiment 3 is 126.61--134.61 s, and the segment for Experiment 4 is 58.84--112.84 s.
 
-EEG samples are internally represented in volts. MNE is used first; if the legacy file name inside the EEGLAB \texttt{.set} file prevents MNE loading, the fallback reader loads the metadata with \texttt{scipy.io.loadmat}, reads the \texttt{.fdt} file with \texttt{np.fromfile}, and multiplies the microvolt-scale EEGLAB data by $10^{-6}$. This keeps the absolute dB/Hz scale consistent between the MNE and fallback paths.
+EEG samples are internally represented in volts. MNE is used first; if the legacy file name inside the EEGLAB \texttt{.set} file prevents MNE loading, the fallback reader loads the metadata with \texttt{scipy.io.loadmat}, reads the \texttt{.fdt} file with \texttt{np.fromfile}, and multiplies the microvolt-scale EEGLAB data by 0.000001. This keeps the absolute dB/Hz scale consistent between the MNE and fallback paths.
 
 \subsection{Common PSD Convention}
 For windowed FFT-based spectra, the one-sided density estimate is
@@ -202,7 +202,7 @@ with 2 s duration. Welch uses 1 s segments, 50\% overlap, and a Hamming window. 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.86\textwidth]{exp3_artificial_fpe_en.png}
-\caption{FPE curve for the artificial signal.}
+\caption{Relative FPE curve for the artificial signal, normalized by the minimum FPE.}
 \end{figure}
 
 \input{generated_en/table_exp3_artificial_fpe.tex}
@@ -236,7 +236,7 @@ For real EEG, the Oz segment 126.61--134.61 s is analyzed. Welch uses 2 s segmen
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.86\textwidth]{exp3_real_fpe_en.png}
-\caption{FPE curve for the real EEG segment.}
+\caption{Relative FPE curve for the real EEG segment, normalized by the minimum FPE.}
 \end{figure}
 
 \input{generated_en/table_exp3_real_fpe.tex}
@@ -404,8 +404,8 @@ The fallback EEGLAB reader converts microvolt-scale \texttt{.fdt} values to volt
 
 \begin{lstlisting}[language=Python,caption={Fallback EEGLAB unit conversion.}]
 raw = np.fromfile(fdt_path, dtype="<f4").reshape(n_channels, n_samples, order="F")
-data_v = raw.astype(float) * 1e-6
-return EEGData(X=data_v, fs=fs, ch_names=ch_names, unit="V", scale_factor=1e-6)
+data_v = raw.astype(float) * 0.000001
+return EEGData(X=data_v, fs=fs, ch_names=ch_names, unit="V", scale_factor=0.000001)
 \end{lstlisting}
 
 \section{Appendix C: Reproduction and Verification Commands}
