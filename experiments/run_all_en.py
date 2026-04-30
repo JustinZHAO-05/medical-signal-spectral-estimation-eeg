@@ -248,11 +248,11 @@ def exp2_figures() -> dict[str, Path]:
         ax.axvspan(8, 13, color="#8ecae6", alpha=0.14, lw=0)
         ax.text(
             0.015,
-            0.82,
+            0.12,
             f"nfft={nfft}, df={eeg.fs / nfft:.4f} Hz",
             transform=ax.transAxes,
             ha="left",
-            va="center",
+            va="bottom",
             fontsize=9,
             bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "#bcccdc", "alpha": 0.92},
         )
