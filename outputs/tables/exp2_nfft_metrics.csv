@@ -1,0 +1,4 @@
+﻿nfft,frequency_grid_interval_hz,rayleigh_interval_hz,tone_spacing_hz,apparent_local_peak_count_9_12,physically_resolvable_two_peaks,reason
+256,0.9765625,1.0,0.4,0,否,1 s观测长度的Rayleigh间隔约1 Hz，大于0.4 Hz频差；补零只加密频率采样点。
+2048,0.1220703125,1.0,0.4,2,否,1 s观测长度的Rayleigh间隔约1 Hz，大于0.4 Hz频差；补零只加密频率采样点。
+8192,0.030517578125,1.0,0.4,2,否,1 s观测长度的Rayleigh间隔约1 Hz，大于0.4 Hz频差；补零只加密频率采样点。

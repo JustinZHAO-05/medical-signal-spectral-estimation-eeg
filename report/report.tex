@@ -1,0 +1,435 @@
+\documentclass[UTF8,zihao=-4,fontset=windows]{ctexart}
+
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{placeins}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\graphicspath{{../outputs/figures/}}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.35em}
+\captionsetup{font=small, labelfont=bf}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  columns=fullflexible,
+  keepspaces=true,
+  keywordstyle=\color{blue!60!black},
+  commentstyle=\color{green!35!black}
+}
+
+\title{\heiti 实验二：谱估计实验报告}
+\author{赵彦喆}
+\date{2026年4月30日}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+本报告完成任务书要求的四个谱估计实验。实验同时覆盖人工信号和LEMON闭眼静息EEG，统一采样率为250 Hz，真实数据优先分析Oz导联。所有谱估计结果均换算为绝对功率谱密度，并以dB/Hz展示。
+\end{abstract}
+
+\section{数据、方法与复现说明}
+
+\subsection{数据与片段}
+人工信号均按任务书公式生成，随机噪声使用固定种子20260430。真实EEG来自配套的LEMON数据文件\texttt{sub-032481/sub-032481\_EC.set}及\texttt{.fdt}文件，读取结果为60通道、119524个采样点、采样率250 Hz。分析导联为Oz。实验一和实验二的主要真实EEG片段为58.84--117.84 s，实验三真实EEG片段为126.61--134.61 s，实验四真实EEG片段为58.84--112.84 s。
+
+EEG数据统一使用伏特（V）作为内部单位。首选读取方式为MNE，MNE会返回V；若因\texttt{.set}文件中的历史文件名导致MNE读取失败，程序会直接用\texttt{scipy.io.loadmat}读取元数据、用\texttt{np.fromfile}读取\texttt{.fdt}，并将EEGLAB中的微伏量级数据乘以$10^{-6}$转换为V。这样两条读取路径得到的Oz片段标准差一致，后续dB/Hz绝对功率谱不会因读取路径改变而整体平移约120 dB。
+
+\subsection{谱估计统一口径}
+所有谱曲线先去均值，再计算单边功率谱密度。周期图类方法采用窗功率归一化：
+\[
+P_{xx}(f)=\frac{|\mathrm{FFT}\{x[n]w[n]\}|^2}{f_s\sum_n w^2[n]},
+\]
+其中$\sum_n w^2[n]$用于消除不同窗函数能量不同造成的功率尺度偏差；非直流、非Nyquist频点做单边谱能量加倍。直接法等价于矩形窗整段FFT；周期图法使用指定窗函数；自相关法采用有偏全滞后自相关序列再做FFT，因此在矩形窗、全滞后条件下与直接法有明确的Wiener-Khinchin对应关系。若改用截断自相关或给自相关序列加窗，谱曲线会更平滑但分辨率和偏差也会改变。
+
+Welch法把数据切分为重叠短窗，对每段周期图取平均。它降低的是估计方差，代价是每段窗长决定的频率分辨率下降。AR谱采用Yule-Walker参数估计，阶数选择使用FPE准则：
+\[
+\mathrm{FPE}(p)=\hat{\sigma}_p^2\frac{N+p+1}{N-p-1}.
+\]
+定量指标中，$\alpha$峰频率在8--13 Hz内取最大值，$\alpha$突出度定义为$\alpha$峰功率减去15--30 Hz背景均值，单位为dB。分辨率实验额外报告Rayleigh间隔$1/T$、两峰之间最低点以及“弱峰功率减去峰间谷值”的相对谷深；NFFT实验明确区分“插值曲线上的表观局部峰”和“由观测时长支持的物理可分辨双峰”。
+
+\subsection{复现命令}
+从项目根目录运行：
+\begin{verbatim}
+.\.venv\Scripts\python.exe -m experiments.run_all
+.\.venv\Scripts\python.exe report\build_report.py
+\end{verbatim}
+第一条命令生成图表、缓存和CSV指标；第二条命令只读取已有图表和CSV指标，生成并编译本PDF报告。
+
+\section{实验一：经典非参数谱估计比较}
+
+\subsection{实验方法}
+人工信号为4 s复合信号
+\[
+x(t)=\sin(2\pi\cdot12t)+0.6\sin(2\pi\cdot24t)+0.8w(t).
+\]
+同一信号分别使用直接法、Hamming窗周期图、自相关法和Welch法估计PSD。Welch法采用1 s分段、50\%重叠、Hamming窗。真实EEG重复相同方法，分析Oz导联58.84--117.84 s片段。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp1_artificial_time_signal.png}
+\caption{人工复合信号的4 s时域波形。该图用于确认信号同时包含周期成分和高斯噪声扰动。}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp1_artificial_methods.png}
+\caption{人工复合信号的四种非参数谱估计比较。}
+\end{figure}
+\input{generated/table_exp1_artificial.tex}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp1_real_eeg_time_segment.png}
+\caption{真实Oz导联58.84--117.84 s闭眼EEG片段时域波形。纵轴显示为微伏，仅用于直观检查片段幅值与连续性。}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp1_real_eeg_methods.png}
+\caption{真实Oz 59 s闭眼EEG的四种非参数谱估计比较。}
+\end{figure}
+\input{generated/table_exp1_real.tex}
+
+\subsection{结果分析}
+人工信号中四种方法均能定位12 Hz主峰，24 Hz二次谐波也能被观察到。表1进一步给出峰功率、谐波突出度和曲线起伏指标：Welch法的曲线起伏最小，说明平均降低了随机波动；但其峰功率也明显低于整段FFT类方法，说明平滑并非无代价。直接法与自相关法在本实现中对应同一有偏自相关和整段FFT关系，因此谱线细节高度一致；Hamming周期图降低旁瓣泄漏，但主瓣更宽。
+
+真实EEG中，$\alpha$峰稳定出现在约10 Hz附近，但不同估计器给出的峰高、峰宽和背景噪声底不同。表2中Hamming周期图给出的$\alpha$突出度约28 dB，而Welch法约16 dB，差异并不代表生理节律突然变化，而是分段平均、窗长和背景估计方式共同作用的结果。Welch谱的$\alpha$峰更宽、更平滑，适合稳健观察背景趋势；整段周期图峰更尖锐，但随机起伏和泄漏也更明显。
+
+\subsection{思考题回答}
+\textbf{问题：为什么同一段闭眼静息EEG在不同谱估计方法下会出现不同的$\alpha$峰高度、带宽和背景噪声底形态？}
+
+\textbf{回答：}因为有限长EEG不是无限长平稳过程的真实谱，而是不同估计器对有限样本的估计。窗函数改变主瓣宽度和旁瓣泄漏，Welch平均降低方差但平滑峰形，自相关法与直接法的等价关系也依赖自相关估计方式。因此同一段数据会因估计器偏差、方差和窗频响不同而呈现不同峰高、带宽和背景形态。
+
+\textbf{问题：为什么“更平滑的谱”不能直接理解为“更准确的谱”？}
+
+\textbf{回答：}平滑通常来自平均或低通式的估计器效应，它降低随机起伏，但也可能抹掉窄峰、合并相邻成分或低估峰高。准确性需要结合任务目标、分辨率、泄漏和统计方差判断，不能只看曲线是否平滑。
+
+\textbf{问题：如果某一种方法下$\alpha$峰不明显，能否直接得出“该受试者没有显著$\alpha$节律”的结论？为什么？}
+
+\textbf{回答：}不能。$\alpha$峰不明显可能来自窗函数泄漏、数据太短、Welch分段太短、噪声背景高、AR阶数不合适或片段状态变化。应在统一数据、多个合理参数和时域质量检查下综合判断。
+
+\textbf{问题：在闭眼静息EEG的$\alpha$节律分析中，为什么谱估计方法本身就可能影响最终判断结果？}
+
+\textbf{回答：}临床或实验判断常依赖峰频、峰宽和相对背景突出度，这些指标由谱估计器直接给出。估计器改变这些数值，就会改变“峰是否显著”“主频是多少”“节律是否稳定”等结论。
+
+\FloatBarrier
+\section{实验二：谱泄漏、频率分辨率、窗函数、数据长度与NFFT}
+
+\subsection{人工信号：数据长度与分辨率}
+双频信号$x_1(t)=\sin(2\pi10t)+0.8\sin(2\pi11t)$分别取1、2、4、8 s，使用矩形窗周期图，固定\texttt{nfft=4096}以排除频率坐标过稀的影响。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp2_length_resolution.png}
+\caption{数据长度对10 Hz与11 Hz双峰可分辨性的影响。}
+\end{figure}
+\input{generated/table_exp2_length.tex}
+
+\subsection{人工信号：窗函数与谱泄漏}
+信号$x_2(t)=\sin(2\pi10.3t)+0.15\sin(2\pi14.1t)$用于观察强峰旁瓣对弱峰的掩盖。固定1.8 s和\texttt{nfft=4096}，比较矩形、Hann、Hamming和Blackman窗。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp2_window_leakage.png}
+\caption{不同窗函数下强峰泄漏与14 Hz弱峰可见性比较。}
+\end{figure}
+\input{generated/table_exp2_window.tex}
+
+\subsection{人工信号：NFFT与频率轴变密}
+信号$x_3(t)=\sin(2\pi10t)+0.8\sin(2\pi10.4t)$长度固定为1 s，仅改变\texttt{nfft}。真实分辨率由观测时长决定，10 Hz与10.4 Hz间隔小于1 s数据的Rayleigh间隔。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{exp2_nfft_subplots.png}
+\caption{固定1 s数据时增大NFFT仅使频率采样点更密。}
+\end{figure}
+\input{generated/table_exp2_nfft.tex}
+
+\subsection{真实EEG中的参数影响}
+真实Oz导联使用同一段闭眼EEG。第一组比较10、30、59 s数据长度；第二组固定30 s比较矩形、Hamming和Blackman窗；第三组固定30 s与Hamming窗，仅改变\texttt{nfft}为7500、15000、30000。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp2_real_length_alpha.png}
+\caption{真实EEG中数据长度对$\alpha$峰形态和可辨性的影响。}
+\end{figure}
+\input{generated/table_exp2_real_length.tex}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp2_real_windows_alpha.png}
+\caption{真实EEG中窗函数对$\alpha$峰泄漏和宽度的影响。}
+\end{figure}
+\input{generated/table_exp2_real_window.tex}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp2_real_nfft_alpha.png}
+\caption{同一30 s真实EEG片段在不同NFFT下的$\alpha$峰比较。}
+\end{figure}
+\input{generated/table_exp2_real_nfft.tex}
+
+\subsection{结果分析与思考题回答}
+数据长度实验显示，观测时长越长，Rayleigh间隔越小，峰宽整体收窄，10 Hz与11 Hz之间的相对谷深保持充分。1 s条件下两频率间隔正好等于$1/T$，在本人工信号中又恰好接近整周期，因此表观上可出现两个峰，但这属于临界可分，不应推广为“1 s总能稳定分辨1 Hz相邻频率”。2 s、4 s、8 s条件下$1/T$分别降至0.5、0.25、0.125 Hz，分辨依据更充分。
+
+窗函数实验显示，低旁瓣窗能压低强峰泄漏，使14 Hz弱峰更容易从旁瓣背景中露出；表4中Blackman窗的弱峰突出度最高，但其强峰-3 dB宽度也最大，体现了“低泄漏”和“窄主瓣”之间的折中。NFFT实验显示，频率轴更密会让曲线看起来更连续，甚至可能在插值曲线上产生局部极大值；但10 Hz与10.4 Hz间隔只有0.4 Hz，小于1 s观测长度的1 Hz Rayleigh间隔，因此不能判定为物理上稳定分辨的双峰。
+
+真实EEG中也出现同样规律：较短片段的$\alpha$峰更宽、更不稳定；补零让峰位置读数更细，但峰带宽和实际可分辨信息并未发生实质改变。表6--表8中30 s同一片段在不同NFFT下$\alpha$峰位置几乎不变，说明频率轴变密主要改善显示和读数，而不是新增生理信息。
+
+\textbf{问题：为什么延长观测数据长度通常能够提高相近频率成分的可分辨性，而仅仅增大\texttt{nfft}通常不能从根本上解决分辨率问题？}
+
+\textbf{回答：}观测长度决定谱窗主瓣宽度，理论间隔约为$1/T$。延长$T$会真正缩窄主瓣，让相近频率的能量分布更少重叠。增大\texttt{nfft}只是对同一有限数据做补零插值，增加频率采样点，不增加新的独立观测信息。
+
+\textbf{问题：为什么低旁瓣窗函数往往能更好地抑制谱泄漏，却又可能牺牲相近频率之间的分辨能力？}
+
+\textbf{回答：}窗函数存在主瓣和旁瓣折中。低旁瓣窗如Blackman把泄漏压低，但主瓣更宽，相邻窄峰更容易被宽主瓣合并；矩形窗主瓣窄，但旁瓣高，强峰泄漏可能掩盖弱峰。
+
+\textbf{问题：在真实闭眼静息EEG中，为什么较短的数据片段会使$\alpha$峰看起来更宽、更不稳定，甚至让人误以为“没有明显$\alpha$节律”？}
+
+\textbf{回答：}短片段频率分辨率低，谱窗主瓣宽；同时可平均的样本少，随机波动和瞬时状态变化更容易影响估计。若$\alpha$能量被宽主瓣、背景波动或短时非平稳性稀释，视觉上就可能不显著。
+
+\textbf{问题：为什么在生物医学信号处理中，“频率分辨率更高”“谱泄漏更小”“谱图更平滑”这三个目标往往不能同时做到都很理想？}
+
+\textbf{回答：}高分辨率需要长数据和窄主瓣；低泄漏常需低旁瓣窗而低旁瓣窗会展宽主瓣；平滑稳定通常来自平均而平均会降低频率细节。三者分别对应不同的偏差、方差和分辨率代价。
+
+\FloatBarrier
+\section{实验三：Welch谱估计与AR参数谱估计}
+
+\subsection{人工信号比较与FPE阶数选择}
+人工信号为2 s：
+\[
+x(t)=\sin(2\pi10t)+0.8\sin(2\pi11t)+w(t).
+\]
+Welch法采用1 s分段、50\%重叠、Hamming窗。AR谱使用Yule-Walker法，代表性阶数为4、16、32、128；同时在$p=2,\ldots,30$范围内计算FPE。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp3_artificial_welch_ar.png}
+\caption{人工信号中Welch谱与不同阶数AR谱比较。}
+\end{figure}
+\input{generated/table_exp3_artificial.tex}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{exp3_artificial_fpe.png}
+\caption{人工信号AR阶数-FPE曲线。}
+\end{figure}
+\input{generated/table_exp3_artificial_fpe.tex}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp3_artificial_ar_pstar.png}
+\caption{FPE推荐阶数与代表性AR阶数的谱形比较。}
+\end{figure}
+\input{generated/table_exp3_artificial_risk.tex}
+
+\subsection{真实EEG比较}
+真实EEG选取Oz导联126.61--134.61 s的8 s片段。Welch法采用2 s分段、50\%重叠、Hamming窗。AR代表性阶数为4、16、32、64，并在$p=2,\ldots,80$范围内用FPE选择$p^*$。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp3_real_welch_ar.png}
+\caption{真实Oz 8 s EEG的Welch谱、代表性AR谱及FPE推荐阶数谱。}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp3_real_welch_ar_alpha_zoom.png}
+\caption{真实Oz 8 s EEG在7--14 Hz范围内的局部放大图。局部图更清楚显示AR阶数改变对$\alpha$峰尖锐程度和峰形分裂的影响。}
+\end{figure}
+\input{generated/table_exp3_real.tex}
+\input{generated/table_exp3_real_risk.tex}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{exp3_real_fpe.png}
+\caption{真实EEG的AR阶数-FPE曲线。}
+\end{figure}
+\input{generated/table_exp3_real_fpe.tex}
+
+\subsection{结果分析与思考题回答}
+人工信号中，低阶AR谱较平滑，容易把10 Hz和11 Hz合并；较高阶AR谱可形成更尖锐的峰，但表中的局部峰数也提示其更容易出现额外分裂和不稳定峰位。Welch谱更稳健，但在2 s短数据和1 s分段下对相近频率的分辨能力有限。FPE给出的是预测误差意义下的阶数，并不等同于最符合生理解释的谱形；当FPE推荐阶数与视觉上最可解释的谱形不一致时，应优先结合任务、数据长度和伪峰风险判断。
+
+真实EEG中，AR谱的$\alpha$峰通常比Welch谱尖锐，局部放大图显示高阶AR会显著压缩峰宽；但表中的13--40 Hz局部峰数说明，高阶模型也可能在$\alpha$附近或更高频段生成可疑细峰。Welch曲线较平滑，更适合稳健背景估计；AR曲线更适合探索短数据中的窄带结构，但需要阶数约束和伪峰检查。
+
+\textbf{问题：为什么AR参数谱估计在短数据条件下常常比Welch谱看起来更尖锐？}
+
+\textbf{回答：}AR方法用有限阶模型外推信号的自相关结构，谱峰由模型极点决定，不受FFT频点和分段平均的直接限制，因此短数据下也可能产生窄峰。Welch法依赖实际分段长度，分辨率受窗长限制。
+
+\textbf{问题：为什么AR阶数过低会导致过度平滑，而阶数过高又可能制造伪峰？}
+
+\textbf{回答：}低阶模型参数少，只能描述粗略谱形，多个相近成分容易被合并。高阶模型自由度大，会拟合噪声和有限样本偶然结构，使谱中出现没有稳定生理依据的尖峰。
+
+\textbf{问题：为什么FPE最优阶数不一定自动对应“最可信的生理解释”？}
+
+\textbf{回答：}FPE优化的是一步预测误差与模型复杂度的统计折中，而不是神经节律真实性。若数据短、噪声强或非平稳，预测最优模型仍可能把噪声结构解释为谱峰。
+
+\textbf{问题：在闭眼静息EEG的$\alpha$节律分析中，为什么“峰更尖锐”不一定代表“节律被更真实地恢复了”？}
+
+\textbf{回答：}尖峰可能来自AR模型极点、阶数过高或短样本随机结构。真实$\alpha$节律本身有带宽和时变性，过度尖锐反而可能低估生理波动或制造伪分辨率。
+
+\FloatBarrier
+\section{实验四：周期图统计不稳定性与Welch平均}
+
+\subsection{同一随机过程的不同实现}
+生成30个相互独立的8 s信号$x_k(t)=\sin(2\pi10t)+w_k(t)$。每个实现分别计算整段Hamming周期图和2 s分段、50\%重叠、Hamming窗Welch谱。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp4_artificial_periodogram_30.png}
+\caption{30个独立实现的单次周期图及均值谱。}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp4_artificial_welch_30.png}
+\caption{30个独立实现的Welch谱及均值谱。}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp4_artificial_std_comparison.png}
+\caption{人工信号中周期图与Welch谱的跨实现点wise标准差。Welch在背景频段的标准差下降更直观。}
+\end{figure}
+\input{generated/table_exp4_realizations.tex}
+
+\subsection{Welch分段长度的改进与代价}
+对同一批30个实现分别使用1、2、4 s分段，均为50\%重叠和Hamming窗。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp4_welch_segment_lengths.png}
+\caption{Welch分段长度对均值谱峰宽、峰高和稳定性的影响。}
+\end{figure}
+\input{generated/table_exp4_segment.tex}
+
+\subsection{真实EEG跨时间窗稳定性}
+将Oz导联58.84--112.84 s划分为9个不重叠6 s窗。每个窗计算整窗Hamming周期图和2 s分段Welch谱。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp4_real_periodogram_windows.png}
+\caption{真实Oz 9个6 s时间窗的单次周期图及均值谱。}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp4_real_welch_windows.png}
+\caption{真实Oz 9个6 s时间窗的Welch谱及均值谱。}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp4_real_std_comparison.png}
+\caption{真实Oz跨时间窗PSD标准差。该图用于区分估计器方差和真实脑状态跨窗变化。}
+\end{figure}
+\input{generated/table_exp4_real.tex}
+
+\subsection{结果分析与思考题回答}
+同一随机过程的30次实现显示，单次周期图在背景频段和主峰附近都有明显跨实现波动；Welch平均降低了这种估计方差，使均值附近的曲线更集中。表中的点wise标准差比单一峰频标准差更能体现这一点：人工信号的底层过程完全相同，因此跨实现差异主要来自随机噪声和估计器方差，Welch平均确实能改善统计稳定性。
+
+分段长度实验显示，短分段提供更多可平均段数，通常使点wise波动降低，但主瓣更宽，10 Hz峰更不尖锐；长分段分辨率更好，但平均次数少，跨实现波动更大。因此Welch并非分段越短越好，而是要在稳定性和频率分辨能力之间选择。
+
+真实EEG结论需要比人工信号更谨慎。真实Oz跨时间窗差异不仅包含估计器方差，还包含神经状态变化、残余伪迹和非平稳性。新增标准差图和表格用于说明：Welch可能降低曲线细碎起伏或某些频段的点wise方差，但$\alpha$峰频率标准差、突出度标准差并不一定同步降低。因此“跨时间窗更平滑”只能说明平均后的谱更稳定，不能直接说明它更接近瞬时真实脑状态。
+
+\textbf{问题：为什么同一随机过程的不同实现，会使单次周期图出现明显波动，即使其底层结构并没有改变？}
+
+\textbf{回答：}周期图是高方差估计量。每次随机噪声实现不同，有限样本的傅里叶系数会显著变化，因此单次周期图不会因为底层PSD相同就自动稳定。
+
+\textbf{问题：Welch法降低的是哪一种统计不稳定性？它主要是通过什么机制实现的？}
+
+\textbf{回答：}Welch法主要降低谱估计的方差。它把数据切成多个重叠窗，对每段周期图做平均，相当于用多个近似独立估计抵消随机起伏。
+
+\textbf{问题：为什么Welch平均通常能得到更平滑、更稳定的谱，但这并不意味着它在所有任务中都更优？}
+
+\textbf{回答：}Welch的平滑来自分段平均，代价是每段更短、频率分辨率下降，窄峰可能变宽或被合并。若任务需要检测相近窄带成分，过短分段的Welch谱可能不合适。
+
+\textbf{问题：为什么在闭眼静息EEG的$\alpha$节律分析中，“跨时间窗更稳定的谱”不一定就代表“更真实地反映了瞬时神经活动”？}
+
+\textbf{回答：}跨时间窗稳定可能来自平均抹平了真实时变活动，也可能来自估计器方差降低。瞬时神经状态本来会变化，因此更稳定的平均谱不一定更接近某一时刻的真实脑状态。
+
+\textbf{问题：在生物医学信号处理中，为什么不能把“平滑”“稳定”“分辨率高”同时当成无代价获得的优点？}
+
+\textbf{回答：}平滑和稳定通常需要平均、加窗或模型约束；这些操作会改变峰宽、峰高和泄漏结构。分辨率高则需要更长数据或更窄主瓣，可能牺牲稳定性和抗泄漏能力。它们是需要按研究问题选择的折中，不是同时免费获得的属性。
+
+\FloatBarrier
+\section{结论}
+四个实验共同说明：谱估计不是中性的显示步骤，而是生物医学信号分析链中的方法选择。直接法、周期图、自相关法、Welch法和AR法各有偏差、方差和分辨率特性。闭眼EEG的$\alpha$节律在Oz导联中可以稳定观察到，但峰频、峰宽、突出度和背景噪声底会随估计器和参数改变。实际分析中应同时报告方法、窗函数、数据长度、NFFT、Welch分段、AR阶数和阶数选择准则，并避免把“更平滑”“更尖锐”直接等同于“更真实”。
+
+\section{附录：代码组织与核心代码贴片}
+核心代码位于\texttt{src/}和\texttt{experiments/}，主要文件如下：
+\begin{itemize}
+  \item \texttt{src/spectral\_methods.py}：谱估计和指标函数。
+  \item \texttt{src/data\_io.py}：EEG读取与片段截取。
+  \item \texttt{experiments/exp1.py}至\texttt{experiments/exp4.py}：四个实验的图表与指标生成。
+  \item \texttt{experiments/render\_figures.py}：按固定随机种子刷新图表和表格。
+  \item \texttt{report/build\_report.py}：读取已生成结果并编译本报告。
+\end{itemize}
+
+\subsection{PSD统一缩放}
+\begin{lstlisting}[language=Python]
+def one_sided_from_fft(y, fs, nfft, scale_sum_sq):
+    spec = np.fft.rfft(y, n=nfft)
+    pxx = (np.abs(spec) ** 2) / (fs * scale_sum_sq)
+    if nfft % 2 == 0:
+        pxx[1:-1] *= 2.0
+    else:
+        pxx[1:] *= 2.0
+    freqs = np.fft.rfftfreq(nfft, d=1.0 / fs)
+    return freqs, pxx
+\end{lstlisting}
+
+\subsection{Welch谱估计}
+\begin{lstlisting}[language=Python]
+freqs, pxx = signal.welch(
+    demean(x), fs=fs, window="hamming",
+    nperseg=int(round(segment_s * fs)),
+    noverlap=int(round(segment_s * fs * 0.5)),
+    nfft=nfft, detrend=False,
+    return_onesided=True, scaling="density",
+)
+\end{lstlisting}
+
+\subsection{Yule-Walker AR与FPE}
+\begin{lstlisting}[language=Python]
+r_full = signal.correlate(x, x, mode="full", method="fft") / n
+r = r_full[n - 1 : n + order]
+coeffs = solve_toeplitz((r[:order], r[:order]), -r[1 : order + 1])
+noise_var = r[0] + np.dot(coeffs, r[1 : order + 1])
+fpe = noise_var * (n + order + 1) / (n - order - 1)
+\end{lstlisting}
+
+\subsection{\texorpdfstring{$\alpha$}{alpha}指标}
+\begin{lstlisting}[language=Python]
+peak_f, peak_db = band_peak(freqs, pxx_db, (8.0, 13.0))
+background_db = band_mean_db(freqs, pxx_db, (15.0, 30.0))
+alpha_prominence_db = peak_db - background_db
+alpha_width_hz = minus_3db_width(freqs, pxx_db, (8.0, 13.0))
+\end{lstlisting}
+
+补充CSV指标位于\texttt{outputs/tables/}。其中新增的伪峰风险表、NFFT物理可分辨性表和跨实现/跨时间窗点wise标准差表，是对正文图形判断的数值支撑。
+
+\subsection{复现与检查命令}
+\begin{lstlisting}
+.\.venv\Scripts\python.exe -m py_compile src\*.py experiments\*.py report\build_report.py
+.\.venv\Scripts\python.exe -m experiments.render_figures
+.\.venv\Scripts\python.exe -m experiments.run_all
+.\.venv\Scripts\python.exe report\build_report.py
+pdftoppm -png -r 130 outputs\pdf\实验二-谱估计-实验报告.pdf tmp\pdfs\report_page
+\end{lstlisting}
+
+上述命令分别用于语法检查、刷新图表、全量复现实验、编译PDF和渲染PDF页面。最终提交的PDF、图表和CSV指标均来自同一套固定随机种子流程。
+
+\end{document}

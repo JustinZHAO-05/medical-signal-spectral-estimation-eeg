@@ -1,0 +1,7 @@
+﻿method,local_peak_count_alpha_8_13_hz,local_peak_count_13_40_hz,alpha_minus_3db_width_hz
+Welch(2s/50%),1,8,0.7346123928710391
+AR-YW p=4,1,0,5.805220374464316
+AR-YW p=16,1,0,1.744026457156595
+AR-YW p=32,1,1,0.603519299056968
+AR-YW p=36 (FPE),1,0,0.45070967344537216
+AR-YW p=64,1,2,0.29823163096069294

@@ -1,0 +1,8 @@
+numpy
+scipy
+matplotlib
+pandas
+mne
+jinja2
+pypdf
+pdfplumber

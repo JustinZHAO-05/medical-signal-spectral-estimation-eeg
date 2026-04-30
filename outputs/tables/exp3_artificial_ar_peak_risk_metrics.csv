@@ -1,0 +1,6 @@
+﻿method,local_peak_count_6_18_hz,local_peak_count_12_40_hz,minus_3db_width_near_10hz
+Welch(1s/50%),2,5,1.8169067888077919
+AR-YW p=4,0,0,未分辨
+AR-YW p=16,1,1,1.9236547528090995
+AR-YW p=32,1,1,0.677884112446046
+AR-YW p=128,3,9,0.21428510822018865

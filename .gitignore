@@ -1,0 +1,26 @@
+.venv/
+tmp/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Local submission archives and staging folders
+submit.zip
+_submit_staging*/
+
+# Reproducible generated caches and build intermediates
+outputs/cache/
+outputs/figures/
+outputs/pdf/*
+!outputs/pdf/Spectral_Estimation_Lab_Report_EN.pdf
+report/generated/
+report/generated_en/
+
+# LaTeX build products
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.xdv
+*.synctex.gz
