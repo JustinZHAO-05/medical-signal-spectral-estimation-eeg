@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = PROJECT_ROOT / "sub-032481"
+DATA_DIR = Path(os.environ.get("LEMON_EEG_DIR", PROJECT_ROOT / "data" / "sub-032481")).expanduser()
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 FIGURE_DIR = OUTPUT_DIR / "figures"
 TABLE_DIR = OUTPUT_DIR / "tables"

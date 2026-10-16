@@ -12,14 +12,15 @@ from src.plotting import add_band, finish_psd_axes, save_figure, setup_matplotli
 from src.spectral_methods import alpha_metrics, band_mean_db, minus_3db_width, periodogram_psd, pointwise_std_db, value_at, welch_psd
 
 
-def run() -> dict[str, Path]:
+def run(*, synthetic_only: bool = False) -> dict[str, Path]:
     ensure_output_dirs()
     setup_matplotlib()
     outputs: dict[str, Path] = {}
     signals = _generate_artificial_signals()
     outputs.update(_same_process_realizations(signals))
     outputs.update(_welch_segment_length_tradeoff(signals))
-    outputs.update(_real_eeg_windows())
+    if not synthetic_only:
+        outputs.update(_real_eeg_windows())
     return outputs
 
 

@@ -21,14 +21,15 @@ from src.spectral_methods import (
 )
 
 
-def run() -> dict[str, Path]:
+def run(*, synthetic_only: bool = False) -> dict[str, Path]:
     ensure_output_dirs()
     setup_matplotlib()
     outputs: dict[str, Path] = {}
     outputs.update(_length_resolution())
     outputs.update(_window_leakage())
     outputs.update(_nfft_illusion())
-    outputs.update(_real_eeg_parameter_effects())
+    if not synthetic_only:
+        outputs.update(_real_eeg_parameter_effects())
     return outputs
 
 

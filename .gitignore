@@ -24,3 +24,9 @@ report/generated_en/
 *.out
 *.xdv
 *.synctex.gz
+
+# Externally obtained EEG; never redistribute
+/data/
+/sub-032481/
+*.set
+*.fdt

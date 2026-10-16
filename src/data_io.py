@@ -34,6 +34,9 @@ def sec_to_sample(t_sec: float, fs: float = FS) -> int:
 def load_eeg(data_dir: Path = DATA_DIR) -> EEGData:
     set_file = data_dir / "sub-032481_EC.set"
 
+    if not set_file.is_file() or not set_file.with_suffix(".fdt").is_file():
+        raise FileNotFoundError(f"Place the externally obtained .set/.fdt pair in {data_dir}, or set LEMON_EEG_DIR. See README.md.")
+
     try:
         import mne
 

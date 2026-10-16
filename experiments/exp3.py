@@ -20,12 +20,13 @@ from src.spectral_methods import (
 )
 
 
-def run() -> dict[str, Path]:
+def run(*, synthetic_only: bool = False) -> dict[str, Path]:
     ensure_output_dirs()
     setup_matplotlib()
     outputs: dict[str, Path] = {}
     outputs.update(_artificial_welch_ar())
-    outputs.update(_real_eeg_welch_ar())
+    if not synthetic_only:
+        outputs.update(_real_eeg_welch_ar())
     return outputs
 
 

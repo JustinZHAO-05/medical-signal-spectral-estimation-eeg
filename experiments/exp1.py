@@ -22,12 +22,13 @@ from src.spectral_methods import (
 )
 
 
-def run() -> dict[str, Path]:
+def run(*, synthetic_only: bool = False) -> dict[str, Path]:
     ensure_output_dirs()
     setup_matplotlib()
     outputs: dict[str, Path] = {}
     outputs.update(_artificial_methods())
-    outputs.update(_real_eeg_methods())
+    if not synthetic_only:
+        outputs.update(_real_eeg_methods())
     return outputs
 
 
